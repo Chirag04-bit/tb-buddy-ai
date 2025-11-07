@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { PatientForm } from "@/components/PatientForm";
 import { SymptomChecklist } from "@/components/SymptomChecklist";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DiagnosticResults } from "@/components/DiagnosticResults";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Stethoscope, Activity } from "lucide-react";
+import { Stethoscope, Activity, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { Session } from "@supabase/supabase-js";
 
 export type PatientData = {
   name: string;
@@ -26,6 +28,8 @@ export type DiagnosisResult = {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [labResults, setLabResults] = useState<string>("");
@@ -33,6 +37,24 @@ const Index = () => {
   const [results, setResults] = useState<DiagnosisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleAnalyze = async () => {
     if (!patientData) {
@@ -93,18 +115,38 @@ const Index = () => {
     setResults(null);
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
-              <Stethoscope className="h-6 w-6 text-primary-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
+                <Stethoscope className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">TB Detection Assistant</h1>
+                <p className="text-sm text-muted-foreground">AI-Powered Tuberculosis Diagnostic Support</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">TB Detection Assistant</h1>
-              <p className="text-sm text-muted-foreground">AI-Powered Tuberculosis Diagnostic Support</p>
+            <div className="flex gap-2">
+              <Button onClick={() => navigate("/history")} variant="outline">
+                <History className="h-4 w-4 mr-2" />
+                History
+              </Button>
+              <Button onClick={handleSignOut} variant="outline">
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>

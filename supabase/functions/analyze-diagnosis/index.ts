@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,31 @@ serve(async (req) => {
   }
 
   try {
+    // Get user from Authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { patientData, symptoms, labResults, imageData } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -140,6 +166,37 @@ Format your response as a JSON object.`;
         recommendation: "Consult with a qualified healthcare professional for comprehensive evaluation.",
         disclaimer: "⚠️ This is an AI-based diagnostic suggestion, not a medical diagnosis. Always consult a qualified physician."
       };
+    }
+
+    // Save assessment to database
+    try {
+      const { error: dbError } = await supabaseClient
+        .from('patient_assessments')
+        .insert({
+          user_id: user.id,
+          patient_name: patientData.name,
+          patient_age: patientData.age,
+          patient_gender: patientData.gender,
+          symptom_duration: patientData.duration,
+          medical_history: patientData.history,
+          symptoms: symptoms,
+          lab_results: labResults,
+          has_image: !!imageData,
+          diagnosis_summary: analysis.summary,
+          findings: analysis.findings,
+          confidence: analysis.confidence,
+          recommendation: analysis.recommendation
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        // Continue even if DB save fails
+      } else {
+        console.log("Assessment saved to database");
+      }
+    } catch (saveError) {
+      console.error("Failed to save assessment:", saveError);
+      // Continue even if save fails
     }
 
     return new Response(
