@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Stethoscope, Search, ArrowLeft, FileText, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { Session } from "@supabase/supabase-js";
@@ -43,6 +45,7 @@ type Assessment = {
 const History = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [session, setSession] = useState<Session | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [filteredAssessments, setFilteredAssessments] = useState<Assessment[]>([]);
@@ -85,8 +88,8 @@ const History = () => {
       setFilteredAssessments(data || []);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to load assessment history",
+        title: t("error"),
+        description: t("errorLoadHistory"),
         variant: "destructive",
       });
     } finally {
@@ -122,15 +125,15 @@ const History = () => {
       if (error) throw error;
 
       toast({
-        title: "Deleted",
-        description: "Assessment deleted successfully",
+        title: t("deleted"),
+        description: t("deletedDesc"),
       });
       loadAssessments();
       setSelectedAssessment(null);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete assessment",
+        title: t("error"),
+        description: t("errorDelete"),
         variant: "destructive",
       });
     }
@@ -159,75 +162,84 @@ const History = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary via-primary to-accent shadow-lg">
                 <Stethoscope className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Assessment History</h1>
-                <p className="text-sm text-muted-foreground">Review past diagnostic assessments</p>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {t("assessmentHistory")}
+                </h1>
+                <p className="text-sm text-muted-foreground">{t("reviewPast")}</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <LanguageSwitcher />
               <Button onClick={() => navigate("/")} variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                New Assessment
+                {t("newAssessment")}
               </Button>
               <Button onClick={handleSignOut} variant="outline">
-                Sign Out
+                {t("signOut")}
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
+      <main className="container mx-auto px-4 py-8 max-w-7xl relative">
         {!selectedAssessment ? (
           <div className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
               <div className="flex gap-4 flex-col md:flex-row">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by patient name or diagnosis..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-background/50 backdrop-blur-sm"
                   />
                 </div>
                 <Select value={confidenceFilter} onValueChange={setConfidenceFilter}>
-                  <SelectTrigger className="w-full md:w-[200px]">
-                    <SelectValue placeholder="Filter by confidence" />
+                  <SelectTrigger className="w-full md:w-[200px] bg-background/50 backdrop-blur-sm">
+                    <SelectValue placeholder={t("filterByConfidence")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Confidence Levels</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="all">{t("allConfidenceLevels")}</SelectItem>
+                    <SelectItem value="high">{t("high")}</SelectItem>
+                    <SelectItem value="medium">{t("medium")}</SelectItem>
+                    <SelectItem value="low">{t("low")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </Card>
 
-            <Card className="p-6">
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
               {loading ? (
-                <p className="text-center text-muted-foreground">Loading assessments...</p>
+                <p className="text-center text-muted-foreground">{t("loadingAssessments")}</p>
               ) : filteredAssessments.length === 0 ? (
-                <p className="text-center text-muted-foreground">No assessments found</p>
+                <p className="text-center text-muted-foreground">{t("noAssessments")}</p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Patient Name</TableHead>
-                      <TableHead>Age</TableHead>
-                      <TableHead>Gender</TableHead>
-                      <TableHead>Confidence</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t("date")}</TableHead>
+                      <TableHead>{t("name")}</TableHead>
+                      <TableHead>{t("age")}</TableHead>
+                      <TableHead>{t("gender")}</TableHead>
+                      <TableHead>{t("confidenceLevel")}</TableHead>
+                      <TableHead>{t("actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -238,10 +250,10 @@ const History = () => {
                         </TableCell>
                         <TableCell className="font-medium">{assessment.patient_name}</TableCell>
                         <TableCell>{assessment.patient_age}</TableCell>
-                        <TableCell>{assessment.patient_gender}</TableCell>
+                        <TableCell className="capitalize">{assessment.patient_gender}</TableCell>
                         <TableCell>
                           <Badge variant={getConfidenceBadgeVariant(assessment.confidence)}>
-                            {assessment.confidence}
+                            {t(assessment.confidence.toLowerCase())}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -252,7 +264,7 @@ const History = () => {
                               onClick={() => setSelectedAssessment(assessment)}
                             >
                               <FileText className="h-4 w-4 mr-1" />
-                              View
+                              {t("view")}
                             </Button>
                             <Button
                               size="sm"
@@ -274,35 +286,35 @@ const History = () => {
           <div className="space-y-6">
             <Button onClick={() => setSelectedAssessment(null)} variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to List
+              {t("backToList")}
             </Button>
 
-            <Card className="p-6">
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">Patient Information</h2>
+                  <h2 className="text-2xl font-bold mb-2">{t("patientInfo")}</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Name:</span>
+                      <span className="text-muted-foreground">{t("name")}:</span>
                       <p className="font-medium">{selectedAssessment.patient_name}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Age:</span>
+                      <span className="text-muted-foreground">{t("age")}:</span>
                       <p className="font-medium">{selectedAssessment.patient_age}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Gender:</span>
-                      <p className="font-medium">{selectedAssessment.patient_gender}</p>
+                      <span className="text-muted-foreground">{t("gender")}:</span>
+                      <p className="font-medium capitalize">{selectedAssessment.patient_gender}</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Duration:</span>
+                      <span className="text-muted-foreground">{t("symptomDuration")}:</span>
                       <p className="font-medium">{selectedAssessment.symptom_duration}</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Symptoms</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t("symptomsAssessment")}</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedAssessment.symptoms.map((symptom, index) => (
                       <Badge key={index} variant="outline">
@@ -314,23 +326,23 @@ const History = () => {
 
                 {selectedAssessment.medical_history && (
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">Medical History</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t("medicalHistory")}</h3>
                     <p className="text-sm">{selectedAssessment.medical_history}</p>
                   </div>
                 )}
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Diagnostic Summary</h3>
+                    <h3 className="text-lg font-semibold">{t("diagnosticResults")}</h3>
                     <Badge variant={getConfidenceBadgeVariant(selectedAssessment.confidence)}>
-                      {selectedAssessment.confidence} Confidence
+                      {t(selectedAssessment.confidence.toLowerCase())} {t("confidenceLevel")}
                     </Badge>
                   </div>
                   <p className="text-sm mb-4">{selectedAssessment.diagnosis_summary}</p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Key Findings</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t("keyFindings")}</h3>
                   <ul className="list-disc list-inside space-y-1">
                     {selectedAssessment.findings.map((finding, index) => (
                       <li key={index} className="text-sm">
@@ -341,13 +353,13 @@ const History = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Recommendation</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t("recommendation")}</h3>
                   <p className="text-sm">{selectedAssessment.recommendation}</p>
                 </div>
 
                 <div className="pt-4 border-t">
                   <p className="text-xs text-muted-foreground">
-                    Assessment created: {format(new Date(selectedAssessment.created_at), "PPpp")}
+                    {t("date")}: {format(new Date(selectedAssessment.created_at), "PPpp")}
                   </p>
                 </div>
               </div>

@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Stethoscope } from "lucide-react";
 import { z } from "zod";
 
@@ -18,6 +20,7 @@ const authSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -133,50 +136,64 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-elevated">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
+
+      <div className="absolute top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
+
+      <Card className="w-full max-w-md p-8 shadow-elevated bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50 relative z-10">
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary via-primary to-accent shadow-lg">
             <Stethoscope className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold">TB Detection Assistant</h1>
-            <p className="text-sm text-muted-foreground">Sign in to access your assessments</p>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {t("appTitle")}
+            </h1>
+            <p className="text-sm text-muted-foreground">{t("authSubtitle")}</p>
           </div>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signin">{t("signIn")}</TabsTrigger>
+            <TabsTrigger value="signup">{t("signUp")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
+                <Label htmlFor="signin-email">{t("email")}</Label>
                 <Input
                   id="signin-email"
                   type="email"
-                  placeholder="your.email@example.com"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-background/50 backdrop-blur-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
+                <Label htmlFor="signin-password">{t("password")}</Label>
                 <Input
                   id="signin-password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="bg-background/50 backdrop-blur-sm"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing In..." : "Sign In"}
+              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-accent" disabled={loading}>
+                {loading ? t("signingIn") : t("signIn")}
               </Button>
             </form>
           </TabsContent>
@@ -184,29 +201,31 @@ const Auth = () => {
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
+                <Label htmlFor="signup-email">{t("email")}</Label>
                 <Input
                   id="signup-email"
                   type="email"
-                  placeholder="your.email@example.com"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-background/50 backdrop-blur-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
+                <Label htmlFor="signup-password">{t("password")}</Label>
                 <Input
                   id="signup-password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("passwordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="bg-background/50 backdrop-blur-sm"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating Account..." : "Sign Up"}
+              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-accent" disabled={loading}>
+                {loading ? t("creatingAccount") : t("signUp")}
               </Button>
             </form>
           </TabsContent>

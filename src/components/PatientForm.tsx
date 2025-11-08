@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { PatientData } from "@/pages/Index";
 
 type PatientFormProps = {
@@ -10,6 +11,7 @@ type PatientFormProps = {
 };
 
 export const PatientForm = ({ onSubmit }: PatientFormProps) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -49,14 +51,14 @@ export const PatientForm = ({ onSubmit }: PatientFormProps) => {
           <div className="space-y-2 flex-1">
             <p className="text-sm text-muted-foreground">Patient Details Saved</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div><span className="font-medium">Name:</span> {formData.name}</div>
-              <div><span className="font-medium">Age:</span> {formData.age}</div>
-              <div><span className="font-medium">Gender:</span> {formData.gender}</div>
-              <div><span className="font-medium">Duration:</span> {formData.duration}</div>
+              <div><span className="font-medium">{t("patientName")}:</span> {formData.name}</div>
+              <div><span className="font-medium">{t("age")}:</span> {formData.age}</div>
+              <div><span className="font-medium">{t("gender")}:</span> {formData.gender}</div>
+              <div><span className="font-medium">{t("symptomDuration")}:</span> {formData.duration}</div>
             </div>
             {formData.history && (
               <div className="text-sm">
-                <span className="font-medium">History:</span> {formData.history}
+                <span className="font-medium">{t("medicalHistory")}:</span> {formData.history}
               </div>
             )}
           </div>
@@ -72,18 +74,19 @@ export const PatientForm = ({ onSubmit }: PatientFormProps) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Full Name *</Label>
+          <Label htmlFor="name">{t("patientName")} *</Label>
           <Input
             id="name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Enter patient name"
+            placeholder={t("patientName")}
             required
+            className="bg-background/50 backdrop-blur-sm"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="age">Age *</Label>
+          <Label htmlFor="age">{t("age")} *</Label>
           <Input
             id="age"
             type="number"
@@ -91,30 +94,31 @@ export const PatientForm = ({ onSubmit }: PatientFormProps) => {
             max="120"
             value={formData.age}
             onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-            placeholder="Enter age"
+            placeholder={t("age")}
             required
+            className="bg-background/50 backdrop-blur-sm"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="gender">Gender *</Label>
+          <Label htmlFor="gender">{t("gender")} *</Label>
           <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
-            <SelectTrigger id="gender">
-              <SelectValue placeholder="Select gender" />
+            <SelectTrigger id="gender" className="bg-background/50 backdrop-blur-sm">
+              <SelectValue placeholder={t("gender")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="male">{t("male")}</SelectItem>
+              <SelectItem value="female">{t("female")}</SelectItem>
+              <SelectItem value="other">{t("other")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="duration">Symptom Duration *</Label>
+          <Label htmlFor="duration">{t("symptomDuration")} *</Label>
           <Select value={formData.duration} onValueChange={(value) => setFormData({ ...formData, duration: value })}>
-            <SelectTrigger id="duration">
-              <SelectValue placeholder="Select duration" />
+            <SelectTrigger id="duration" className="bg-background/50 backdrop-blur-sm">
+              <SelectValue placeholder={t("symptomDuration")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="less-than-1-week">Less than 1 week</SelectItem>
@@ -128,17 +132,17 @@ export const PatientForm = ({ onSubmit }: PatientFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="history">Medical History (Optional)</Label>
+        <Label htmlFor="history">{t("medicalHistory")}</Label>
         <textarea
           id="history"
-          className="w-full min-h-[80px] p-3 rounded-lg border border-input bg-background text-foreground resize-none focus:ring-2 focus:ring-ring focus:border-transparent"
+          className="w-full min-h-[80px] p-3 rounded-lg border border-input bg-background/50 backdrop-blur-sm text-foreground resize-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
           value={formData.history}
           onChange={(e) => setFormData({ ...formData, history: e.target.value })}
-          placeholder="Any relevant medical history (respiratory conditions, immune system issues, etc.)"
+          placeholder={t("medicalHistoryPlaceholder")}
         />
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full bg-gradient-to-r from-primary to-accent">
         Save Patient Information
       </Button>
     </form>

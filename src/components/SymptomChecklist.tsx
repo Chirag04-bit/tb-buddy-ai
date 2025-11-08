@@ -1,15 +1,16 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const SYMPTOMS = [
-  { id: "chronic-cough", label: "Chronic Cough (≥3 weeks)", description: "Persistent cough lasting three weeks or more" },
-  { id: "fever", label: "Fever", description: "Elevated body temperature, especially at night" },
-  { id: "night-sweats", label: "Night Sweats", description: "Excessive sweating during sleep" },
-  { id: "chest-pain", label: "Chest Pain", description: "Pain or discomfort in the chest area" },
-  { id: "fatigue", label: "Fatigue", description: "Persistent tiredness and lack of energy" },
-  { id: "weight-loss", label: "Weight Loss", description: "Unintentional weight loss" },
-  { id: "hemoptysis", label: "Hemoptysis", description: "Coughing up blood or blood-tinged sputum" },
-  { id: "loss-appetite", label: "Loss of Appetite", description: "Reduced desire to eat" },
+  { id: "chronic-cough", translationKey: "persistentCough", description: "Persistent cough lasting three weeks or more" },
+  { id: "fever", translationKey: "fever", description: "Elevated body temperature, especially at night" },
+  { id: "night-sweats", translationKey: "nightSweats", description: "Excessive sweating during sleep" },
+  { id: "chest-pain", translationKey: "chestPain", description: "Pain or discomfort in the chest area" },
+  { id: "fatigue", translationKey: "fatigue", description: "Persistent tiredness and lack of energy" },
+  { id: "weight-loss", translationKey: "weightLoss", description: "Unintentional weight loss" },
+  { id: "hemoptysis", translationKey: "coughingBlood", description: "Coughing up blood or blood-tinged sputum" },
+  { id: "loss-appetite", translationKey: "lossOfAppetite", description: "Reduced desire to eat" },
 ];
 
 type SymptomChecklistProps = {
@@ -18,6 +19,8 @@ type SymptomChecklistProps = {
 };
 
 export const SymptomChecklist = ({ selectedSymptoms, onSymptomsChange }: SymptomChecklistProps) => {
+  const { t } = useLanguage();
+  
   const handleSymptomToggle = (symptomId: string) => {
     if (selectedSymptoms.includes(symptomId)) {
       onSymptomsChange(selectedSymptoms.filter((id) => id !== symptomId));
@@ -38,7 +41,7 @@ export const SymptomChecklist = ({ selectedSymptoms, onSymptomsChange }: Symptom
           />
           <div className="flex-1">
             <Label htmlFor={symptom.id} className="font-medium text-sm cursor-pointer">
-              {symptom.label}
+              {t(symptom.translationKey)}
             </Label>
             <p className="text-xs text-muted-foreground mt-1">{symptom.description}</p>
           </div>

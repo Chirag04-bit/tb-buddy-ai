@@ -4,11 +4,13 @@ import { PatientForm } from "@/components/PatientForm";
 import { SymptomChecklist } from "@/components/SymptomChecklist";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DiagnosticResults } from "@/components/DiagnosticResults";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Stethoscope, Activity, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Session } from "@supabase/supabase-js";
 
 export type PatientData = {
@@ -29,6 +31,8 @@ export type DiagnosisResult = {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { t } = useLanguage();
   const [session, setSession] = useState<Session | null>(null);
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [symptoms, setSymptoms] = useState<string[]>([]);
@@ -36,7 +40,6 @@ const Index = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [results, setResults] = useState<DiagnosisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -59,8 +62,8 @@ const Index = () => {
   const handleAnalyze = async () => {
     if (!patientData) {
       toast({
-        title: "Missing Information",
-        description: "Please fill out the patient information form.",
+        title: t("missingInfo"),
+        description: t("missingInfoDesc"),
         variant: "destructive",
       });
       return;
@@ -68,8 +71,8 @@ const Index = () => {
 
     if (symptoms.length === 0) {
       toast({
-        title: "Missing Symptoms",
-        description: "Please select at least one symptom.",
+        title: t("missingSymptoms"),
+        description: t("missingSymptomsDesc"),
         variant: "destructive",
       });
       return;
@@ -92,13 +95,13 @@ const Index = () => {
 
       setResults(data as DiagnosisResult);
       toast({
-        title: "Analysis Complete",
-        description: "Diagnostic analysis has been generated successfully.",
+        title: t("analysisComplete"),
+        description: t("analysisCompleteDesc"),
       });
     } catch (error) {
       console.error("Analysis error:", error);
       toast({
-        title: "Analysis Failed",
+        title: t("analysisFailed"),
         description: error instanceof Error ? error.message : "Failed to analyze patient data.",
         variant: "destructive",
       });
@@ -125,27 +128,36 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-6">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-4 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
+              <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary via-primary to-accent shadow-lg">
                 <Stethoscope className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">TB Detection Assistant</h1>
-                <p className="text-sm text-muted-foreground">AI-Powered Tuberculosis Diagnostic Support</p>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {t("appTitle")}
+                </h1>
+                <p className="text-sm text-muted-foreground">{t("appSubtitle")}</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => navigate("/history")} variant="outline">
-                <History className="h-4 w-4 mr-2" />
-                History
+            <div className="flex gap-2 items-center">
+              <LanguageSwitcher />
+              <Button onClick={() => navigate("/history")} variant="outline" className="gap-2">
+                <History className="h-4 w-4" />
+                {t("history")}
               </Button>
               <Button onClick={handleSignOut} variant="outline">
-                Sign Out
+                {t("signOut")}
               </Button>
             </div>
           </div>
@@ -153,53 +165,53 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8 max-w-6xl relative">
         {!results ? (
           <div className="space-y-6">
             {/* Patient Information */}
-            <Card className="p-6 shadow-card">
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Patient Information</h2>
+                <h2 className="text-xl font-semibold">{t("patientInfo")}</h2>
               </div>
               <PatientForm onSubmit={setPatientData} />
             </Card>
 
             {/* Symptoms */}
-            <Card className="p-6 shadow-card">
-              <h2 className="text-xl font-semibold mb-4">Symptoms Assessment</h2>
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
+              <h2 className="text-xl font-semibold mb-4">{t("symptomsAssessment")}</h2>
               <SymptomChecklist selectedSymptoms={symptoms} onSymptomsChange={setSymptoms} />
             </Card>
 
             {/* Lab Results */}
-            <Card className="p-6 shadow-card">
-              <h2 className="text-xl font-semibold mb-4">Laboratory Results (Optional)</h2>
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
+              <h2 className="text-xl font-semibold mb-4">{t("labResults")}</h2>
               <textarea
-                className="w-full min-h-[100px] p-3 rounded-lg border border-input bg-background text-foreground resize-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                placeholder="Enter any available lab test results (e.g., sputum microscopy, GeneXpert, Mantoux test)..."
+                className="w-full min-h-[100px] p-3 rounded-lg border border-input bg-background/50 backdrop-blur-sm text-foreground resize-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                placeholder={t("labResultsPlaceholder")}
                 value={labResults}
                 onChange={(e) => setLabResults(e.target.value)}
               />
             </Card>
 
             {/* Image Upload */}
-            <Card className="p-6 shadow-card">
-              <h2 className="text-xl font-semibold mb-4">Medical Imaging</h2>
+            <Card className="p-6 shadow-card bg-gradient-to-br from-card to-card/80 backdrop-blur-sm border-border/50">
+              <h2 className="text-xl font-semibold mb-4">{t("medicalImaging")}</h2>
               <ImageUpload onImageUpload={setImageData} />
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 justify-center">
+            <div className="flex gap-4 justify-center pt-2">
               <Button
                 onClick={handleAnalyze}
                 disabled={isAnalyzing}
                 size="lg"
-                className="min-w-[200px] bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+                className="min-w-[200px] bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
               >
-                {isAnalyzing ? "Analyzing..." : "Generate Diagnosis"}
+                {isAnalyzing ? t("analyzing") : t("generateDiagnosis")}
               </Button>
               <Button onClick={handleReset} variant="outline" size="lg">
-                Reset Form
+                {t("resetForm")}
               </Button>
             </div>
           </div>
@@ -209,10 +221,10 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border mt-12 py-6">
+      <footer className="border-t border-border mt-12 py-6 bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>TB Detection Assistant - For Educational and Screening Purposes Only</p>
-          <p className="mt-1">Always consult qualified healthcare professionals for medical advice</p>
+          <p className="font-medium">{t("footerText")}</p>
+          <p className="mt-1">{t("footerSubtext")}</p>
         </div>
       </footer>
     </div>
