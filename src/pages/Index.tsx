@@ -7,10 +7,11 @@ import { DiagnosticResults } from "@/components/DiagnosticResults";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Stethoscope, Activity, History } from "lucide-react";
+import { Stethoscope, Activity, History, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useUserRole } from "@/hooks/use-user-role";
 import type { Session } from "@supabase/supabase-js";
 
 export type PatientData = {
@@ -49,6 +50,7 @@ const Index = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [results, setResults] = useState<DiagnosisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { isAdmin } = useUserRole(session);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -161,6 +163,12 @@ const Index = () => {
             </div>
             <div className="flex gap-2 items-center">
               <LanguageSwitcher />
+              {isAdmin && (
+                <Button onClick={() => navigate("/admin")} variant="outline" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Button>
+              )}
               <Button onClick={() => navigate("/history")} variant="outline" className="gap-2">
                 <History className="h-4 w-4" />
                 {t("history")}

@@ -94,9 +94,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_analytics: {
+        Row: {
+          assessments_with_imaging: number | null
+          high_confidence: number | null
+          last_30_days: number | null
+          last_7_days: number | null
+          low_confidence: number | null
+          medium_confidence: number | null
+          total_assessments: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_assessment_stats: {
+        Args: { days_back?: number }
+        Returns: {
+          date: string
+          high_confidence_count: number
+          low_confidence_count: number
+          medium_confidence_count: number
+          total_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -104,9 +125,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "clinician" | "radiologist"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -234,7 +256,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "clinician", "radiologist"],
     },
   },
 } as const

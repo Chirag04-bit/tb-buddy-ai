@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Stethoscope, Search, ArrowLeft, FileText, Trash2 } from "lucide-react";
+import { useUserRole } from "@/hooks/use-user-role";
+import { Stethoscope, Search, ArrowLeft, FileText, Trash2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Session } from "@supabase/supabase-js";
 
@@ -53,6 +54,7 @@ const History = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [confidenceFilter, setConfidenceFilter] = useState<string>("all");
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+  const { userRole, isAdmin, hasElevatedAccess } = useUserRole(session);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -77,10 +79,17 @@ const History = () => {
   const loadAssessments = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("patient_assessments")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // If not admin, only show user's own assessments
+      if (!isAdmin && session?.user) {
+        query = query.eq('user_id', session.user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -180,10 +189,18 @@ const History = () => {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {t("assessmentHistory")}
                 </h1>
-                <p className="text-sm text-muted-foreground">{t("reviewPast")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {isAdmin ? "Viewing all patient assessments (Admin)" : t("reviewPast")}
+                </p>
               </div>
             </div>
             <div className="flex gap-2 items-center">
+              {hasElevatedAccess && (
+                <Badge variant="outline" className="gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {userRole?.toUpperCase()}
+                </Badge>
+              )}
               <LanguageSwitcher />
               <Button onClick={() => navigate("/")} variant="outline">
                 <ArrowLeft className="h-4 w-4 mr-2" />
