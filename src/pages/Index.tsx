@@ -25,8 +25,17 @@ export type DiagnosisResult = {
   summary: string;
   findings: string[];
   confidence: "low" | "medium" | "high";
+  confidenceScore: number;
+  classification: "no_tb" | "possible_tb" | "likely_tb";
   recommendation: string;
   disclaimer: string;
+  lesions?: Array<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    confidence: number;
+  }>;
 };
 
 const Index = () => {
@@ -216,7 +225,13 @@ const Index = () => {
             </div>
           </div>
         ) : (
-          <DiagnosticResults results={results} onReset={handleReset} />
+          <DiagnosticResults 
+            results={results} 
+            onReset={handleReset}
+            patientData={patientData}
+            imageData={imageData}
+            symptoms={symptoms}
+          />
         )}
       </main>
 

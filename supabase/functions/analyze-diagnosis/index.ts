@@ -44,48 +44,54 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Starting TB diagnosis analysis...");
+    console.log("Starting TB diagnosis analysis with image analysis...");
 
-    // Build comprehensive prompt
-    const systemPrompt = `You are a medical AI assistant specialized in tuberculosis detection and diagnosis. 
-You analyze patient data, symptoms, and medical imaging to provide diagnostic insights.
-Your analysis must be professional, evidence-based, and include appropriate disclaimers.
+    // Build comprehensive prompt for TB diagnosis with lesion detection
+    const analysisPrompt = `You are an expert TB (Tuberculosis) diagnostic assistant with advanced image analysis capabilities. Analyze the following patient data and provide a detailed assessment.
 
-IMPORTANT: Always structure your response as a JSON object with the following fields:
-- summary: string (brief overview of findings)
-- findings: array of strings (specific observations)
-- confidence: "low" | "medium" | "high"
-- recommendation: string (next steps for the patient)
-- disclaimer: string (medical disclaimer)`;
-
-    const userPrompt = `Analyze the following patient case for tuberculosis:
-
-PATIENT INFORMATION:
+Patient Information:
 - Name: ${patientData.name}
 - Age: ${patientData.age}
 - Gender: ${patientData.gender}
 - Symptom Duration: ${patientData.duration}
-- Medical History: ${patientData.history || "None reported"}
+${patientData.history ? `- Medical History: ${patientData.history}` : ''}
 
-SYMPTOMS:
-${symptoms.join(", ")}
+Symptoms: ${symptoms.join(', ')}
+${labResults ? `Lab Results: ${labResults}` : ''}
+${imageData ? 'Note: A chest X-ray or CT scan image has been provided for analysis. Please identify any visible lesions or abnormalities.' : ''}
 
-${labResults ? `LABORATORY RESULTS:\n${labResults}` : ""}
+Please provide a structured response in the following JSON format:
+{
+  "summary": "Brief summary of findings",
+  "findings": ["finding 1", "finding 2", ...],
+  "confidence": "low|medium|high",
+  "confidenceScore": 85,
+  "classification": "no_tb|possible_tb|likely_tb",
+  "recommendation": "Detailed recommendation",
+  "disclaimer": "Medical disclaimer",
+  "lesions": [
+    {
+      "x": 0.3,
+      "y": 0.4,
+      "width": 0.15,
+      "height": 0.12,
+      "confidence": 0.85
+    }
+  ]
+}
 
-${imageData ? "A chest X-ray/CT scan image has been provided for analysis." : "No imaging provided."}
+Classification Guide:
+- "no_tb": No significant TB indicators found (<30% confidence)
+- "possible_tb": Some TB indicators present, further testing recommended (30-70% confidence)
+- "likely_tb": Strong TB indicators, immediate action required (>70% confidence)
 
-Please provide a comprehensive diagnostic analysis including:
-1. Summary of findings
-2. Key observations
-3. Confidence level (low/medium/high)
-4. Recommendations for next steps
-5. Medical disclaimer
-
-Format your response as a JSON object.`;
+If an X-ray image is provided, identify lesion locations as normalized coordinates (0-1 range) relative to image dimensions.
+Focus on TB-specific indicators: upper lobe infiltrates, cavitary lesions, miliary patterns, pleural effusion.
+Provide clear, actionable recommendations based on risk level.`;
 
     // Build messages with multimodal content
     const messages: any[] = [
-      { role: "system", content: systemPrompt }
+      { role: "system", content: "You are a medical AI assistant specialized in tuberculosis detection and diagnosis with image analysis capabilities." }
     ];
 
     // Add text and image in the same user message if image is provided
@@ -93,14 +99,14 @@ Format your response as a JSON object.`;
       messages.push({
         role: "user",
         content: [
-          { type: "text", text: userPrompt },
+          { type: "text", text: analysisPrompt },
           { type: "image_url", image_url: { url: imageData } }
         ]
       });
     } else {
       messages.push({
         role: "user",
-        content: userPrompt
+        content: analysisPrompt
       });
     }
 
@@ -147,24 +153,40 @@ Format your response as a JSON object.`;
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         analysis = JSON.parse(jsonMatch[0]);
+        // Ensure all required fields are present
+        if (!analysis.confidenceScore) {
+          analysis.confidenceScore = analysis.confidence === "high" ? 85 : analysis.confidence === "medium" ? 60 : 40;
+        }
+        if (!analysis.classification) {
+          analysis.classification = analysis.confidence === "high" ? "likely_tb" : analysis.confidence === "medium" ? "possible_tb" : "no_tb";
+        }
+        if (!analysis.lesions) {
+          analysis.lesions = [];
+        }
       } else {
         // Fallback structure if JSON parsing fails
         analysis = {
           summary: analysisText,
           findings: ["Analysis completed. Please review the summary."],
           confidence: "medium",
+          confidenceScore: 50,
+          classification: "possible_tb",
           recommendation: "Consult with a qualified healthcare professional for comprehensive evaluation.",
-          disclaimer: "⚠️ This is an AI-based diagnostic suggestion, not a medical diagnosis. Always consult a qualified physician."
+          disclaimer: "⚠️ This is an AI-based diagnostic suggestion, not a medical diagnosis. Always consult a qualified physician.",
+          lesions: []
         };
       }
     } catch (parseError) {
       console.error("Failed to parse AI response as JSON:", parseError);
       analysis = {
-        summary: analysisText,
-        findings: ["Analysis completed. Please review the summary."],
+        summary: analysisText.substring(0, 500),
+        findings: ["Unable to parse structured response. Please review the summary."],
         confidence: "medium",
+        confidenceScore: 50,
+        classification: "possible_tb",
         recommendation: "Consult with a qualified healthcare professional for comprehensive evaluation.",
-        disclaimer: "⚠️ This is an AI-based diagnostic suggestion, not a medical diagnosis. Always consult a qualified physician."
+        disclaimer: "⚠️ This is an AI-based diagnostic suggestion, not a medical diagnosis. Always consult a qualified physician.",
+        lesions: []
       };
     }
 
