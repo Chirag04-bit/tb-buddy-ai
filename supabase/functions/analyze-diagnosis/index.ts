@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    // Get user from Authorization header
+    // Get user from JWT (verified by platform)
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -21,16 +21,17 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client
+    // Create Supabase client with service role for database operations
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Get user from the verified JWT
+    const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''));
     
-    if (authError || !user) {
+    if (!user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -55,4 +55,4 @@ enable_confirmations = false
 max_frequency = "1s"
 
 [functions.analyze-diagnosis]
-verify_jwt = false
+verify_jwt = true
