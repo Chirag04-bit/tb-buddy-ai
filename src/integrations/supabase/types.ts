@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      favorite_hospitals: {
+        Row: {
+          address: string | null
+          created_at: string
+          hospital_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          specialties: string[] | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          hospital_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          specialties?: string[] | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          hospital_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          specialties?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      health_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metric_type: string
+          notes: string | null
+          recorded_at: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_type: string
+          notes?: string | null
+          recorded_at?: string
+          unit: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_type?: string
+          notes?: string | null
+          recorded_at?: string
+          unit?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      medical_history: {
+        Row: {
+          condition_name: string
+          created_at: string
+          diagnosed_date: string | null
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          condition_name: string
+          created_at?: string
+          diagnosed_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          condition_name?: string
+          created_at?: string
+          diagnosed_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       patient_assessments: {
         Row: {
           confidence: string
@@ -67,6 +166,48 @@ export type Database = {
           symptom_duration?: string
           symptoms?: string[]
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          blood_type: string | null
+          created_at: string
+          date_of_birth: string | null
+          emergency_contact: string | null
+          full_name: string | null
+          gender: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          blood_type?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact?: string | null
+          full_name?: string | null
+          gender?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          blood_type?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          emergency_contact?: string | null
+          full_name?: string | null
+          gender?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

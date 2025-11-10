@@ -13,7 +13,8 @@ import {
   Hospital,
   Phone,
   History,
-  LogOut
+  LogOut,
+  User
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -134,6 +135,10 @@ const Home = () => {
                   Admin
                 </Button>
               )}
+              <Button onClick={() => navigate("/profile")} variant="outline" className="gap-2">
+                <User className="h-4 w-4" />
+                Profile
+              </Button>
               <Button onClick={() => navigate("/history")} variant="outline" className="gap-2">
                 <History className="h-4 w-4" />
                 History
