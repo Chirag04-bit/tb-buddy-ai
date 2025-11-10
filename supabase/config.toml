@@ -56,3 +56,6 @@ max_frequency = "1s"
 
 [functions.analyze-diagnosis]
 verify_jwt = true
+
+[functions.health-assistant]
+verify_jwt = true

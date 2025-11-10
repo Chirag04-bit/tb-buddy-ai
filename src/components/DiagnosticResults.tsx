@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertTriangle, XCircle, FileText, RotateCcw, Download } from "lucide-react";
-import { DiagnosisResult, PatientData } from "@/pages/Index";
+import { DiagnosisResult, PatientData } from "@/pages/TBDiagnosis";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { jsPDF } from "jspdf";
 import { ImageViewer } from "./ImageViewer";
